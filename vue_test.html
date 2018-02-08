@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>test</title>
+</head>
+<body>
+<div>
+	<div class="container">
+		<h1>{{title}}</h1>
+		<p>{{name}}</p>
+		<div>{{input}}</div>
+		<p>hello,vue.js</p>
+		<input type="text" name="" v-model="title"></br>
+		<input type="text" name="" v-model="name"></br>
+		<input type="text" name="" v-model="input">
+	</div>
+</div>
+</body>
+</html>
+<script src="https://cdn.jsdelivr.net/npm/vue@2.5.13/dist/vue.js"></script>
+<script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+<script>
+	var data = {
+		input:'hello world',
+		title:'hello world Vue',
+		name:'hello world JS'
+	}
+	/*var vm = new Vue({
+		el:'.container',
+		data:data
+	});*/
+	var vm = new Vue({
+		el:'.container',
+		data(){
+			return data;
+		}
+	});
+	/*var vm = new Vue({
+		el:'.container',
+		data:{
+			input:'',
+			title:'',
+			name:'',
+		}
+	});
+	vm.input = data.a;
+	vm.title = data.b;
+	vm.name = data.c;*/
+	vm.$watch('input',function(newValue,oldValue){
+		var template ='<div>change after,add div</div>';
+		$('.container').append(template);
+	})
+</script>
