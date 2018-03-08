@@ -34,9 +34,10 @@ define(function(require, exports, module) {
         this.trigger_container = $(win_container);
         this.debuggerStatsu = true;
         this.vendorID = '';    //服务商的id
-        this.condition = {};   //后台配置的触发器条件
-        this.actions = {};     //后台配置的触发器动作
-        this.event = '';       //后台配置的触发器名称
+        // this.triggerConfigFactory = [];
+        // this.condition = {};   //后台配置的触发器条件
+        // this.actions = {};     //后台配置的触发器动作
+        // this.event = '';       //后台配置的触发器名称
         this.userData = {    //用户动作出发的结果反馈
             '1' : '',                //访客页面URL
             '2' : '',                //页面等待时间
@@ -48,8 +49,9 @@ define(function(require, exports, module) {
         };
         this.userConfig = {};
         this.userTriggerObj = {};
-        this.triggerRegisterAnd = [];    //触发器条件函数注册
-        this.triggerRegisterOr = [];    //触发器条件函数注册
+        this.triggerFactory = [];
+        // this.triggerRegisterAnd = [];    //触发器条件函数注册
+        // this.triggerRegisterOr = [];    //触发器条件函数注册
         this.triggerAjax = {
             ajaxGetTriggerConfig : '/osp2016/chat/ajax/ajaxIMTrigger.php'
         };
@@ -71,10 +73,11 @@ define(function(require, exports, module) {
             //ajax去获取后台配置信息
             $.getJSON(ex.triggerAjax.ajaxGetTriggerConfig,{vendorID:ex.vendorID},function (data) {
                 if(data){
-                    ex.condition = data.condition;
-                    ex.actions = data.actions;
-                    ex.event = data.event;
-                    ex.initConfig();
+                    $.each(data,function (k,v) {
+                        var condition = v.condition;
+                        var actions = v.actions;
+                        ex.initConfig(condition,actions);
+                    });
                 }
                 else{
                     ex.debuggerModel(data);
@@ -82,64 +85,66 @@ define(function(require, exports, module) {
             });
         },
 
-        initConfig : function () {
+        initConfig : function (condition,actions) {
             var ex = this;
+            var triggerRegisterOr =[];
+            var triggerRegisterAnd =[];
             //配置信息的生成触发器条件
-            if(!ex.condition || ex.condition === '' || typeof ex.condition === 'undefined'){
+            if(!condition || condition === '' || typeof condition === 'undefined'){
                 return;
             }
-            $.each(ex.condition,function (k,v) {
+            $.each(condition,function (k,v) {
                 if (k === 'or'){
                     $.each(v,function (kk,vv) {
                         //返回触发器结果
                         switch (vv[1]) {
                             case '1' :          //等于
-                                ex.triggerRegisterOr.push(function (userData) {
+                                triggerRegisterOr.push(function (userData) {
                                     return userData[vv[0]] === vv[2];
                                 });
                                 break;
                             case '2' :          //不等于
-                                ex.triggerRegisterOr.push(function (userData) {
+                                triggerRegisterOr.push(function (userData) {
                                     return userData[vv[0]] !== vv[2];
                                 });
                                 break;
                             case '3' :          //大于
-                                ex.triggerRegisterOr.push(function (userData) {
+                                triggerRegisterOr.push(function (userData) {
                                     return userData[vv[0]] > vv[2];
                                 });
                                 break;
                             case '4' :          //小于
-                                ex.triggerRegisterOr.push(function (userData) {
+                                triggerRegisterOr.push(function (userData) {
                                     return userData[vv[0]] < vv[2];
                                 });
                                 break;
                             case '5' :          //大于或等于
-                                ex.triggerRegisterOr.push(function (userData) {
+                                triggerRegisterOr.push(function (userData) {
                                     return userData[vv[0]] >= vv[2];
                                 });
                                 break;
                             case '6' :          //小于或等于
-                                ex.triggerRegisterOr.push(function (userData) {
+                                triggerRegisterOr.push(function (userData) {
                                     return userData[vv[0]] <= vv[2];
                                 });
                                 break;
                             case '7' :          //包含
-                                ex.triggerRegisterOr.push(function (userData) {
+                                triggerRegisterOr.push(function (userData) {
                                     return vv[2].indexOf(userData[vv[0]]);
                                 });
                                 break;
                             case '8' :          //不包含
-                                ex.triggerRegisterOr.push(function (userData) {
+                                triggerRegisterOr.push(function (userData) {
                                     return !vv[2].indexOf(userData[vv[0]]);
                                 });
                                 break;
                             case '9' :          //是
-                                ex.triggerRegisterOr.push(function (userData) {
+                                triggerRegisterOr.push(function (userData) {
                                     return userData[vv[0]] === vv[2];
                                 });
                                 break;
                             case '10' :         //不是
-                                ex.triggerRegisterOr.push(function (userData) {
+                                triggerRegisterOr.push(function (userData) {
                                     return userData[vv[0]] !== vv[2];
                                 });
                                 break;
@@ -153,52 +158,52 @@ define(function(require, exports, module) {
                         //返回触发器结果
                         switch (vv[1]) {
                             case '1' :          //等于
-                                ex.triggerRegisterAnd.push(function (userData) {
+                                triggerRegisterAnd.push(function (userData) {
                                     return userData[vv[0]] === vv[2];
                                 });
                                 break;
                             case '2' :          //不等于
-                                ex.triggerRegisterAnd.push(function (userData) {
+                                triggerRegisterAnd.push(function (userData) {
                                     return userData[vv[0]] !== vv[2];
                                 });
                                 break;
                             case '3' :          //大于
-                                ex.triggerRegisterAnd.push(function (userData) {
+                                triggerRegisterAnd.push(function (userData) {
                                     return userData[vv[0]] > vv[2];
                                 });
                                 break;
                             case '4' :          //小于
-                                ex.triggerRegisterAnd.push(function (userData) {
+                                triggerRegisterAnd.push(function (userData) {
                                     return userData[vv[0]] < vv[2];
                                 });
                                 break;
                             case '5' :          //大于或等于
-                                ex.triggerRegisterAnd.push(function (userData) {
+                                triggerRegisterAnd.push(function (userData) {
                                     return userData[vv[0]] >= vv[2];
                                 });
                                 break;
                             case '6' :          //小于或等于
-                                ex.triggerRegisterAnd.push(function (userData) {
+                                triggerRegisterAnd.push(function (userData) {
                                     return userData[vv[0]] <= vv[2];
                                 });
                                 break;
                             case '7' :          //包含
-                                ex.triggerRegisterAnd.push(function (userData) {
+                                triggerRegisterAnd.push(function (userData) {
                                     return vv[2].indexOf(userData[vv[0]]);
                                 });
                                 break;
                             case '8' :          //不包含
-                                ex.triggerRegisterAnd.push(function (userData) {
+                                triggerRegisterAnd.push(function (userData) {
                                     return !vv[2].indexOf(userData[vv[0]]);
                                 });
                                 break;
                             case '9' :          //是
-                                ex.triggerRegisterAnd.push(function (userData) {
+                                triggerRegisterAnd.push(function (userData) {
                                     return userData[vv[0]] === vv[2];
                                 });
                                 break;
                             case '10' :         //不是
-                                ex.triggerRegisterAnd.push(function (userData) {
+                                triggerRegisterAnd.push(function (userData) {
                                     return userData[vv[0]] !== vv[2];
                                 });
                                 break;
@@ -210,6 +215,11 @@ define(function(require, exports, module) {
                 else{
                     return;
                 }
+                ex.triggerFactory.push({
+                    triggerRegisterOr:triggerRegisterOr,
+                    triggerRegisterAnd:triggerRegisterAnd,
+                    triggerActions : actions
+                });
             });
 
         },
@@ -251,9 +261,9 @@ define(function(require, exports, module) {
         },
 
         //选定执行选项
-        runOptions : function () {
+        runOptions : function (triggerActions) {
             var ex = this;
-            $.each(ex.actions,function (k,v) {
+            $.each(triggerActions,function (k,v) {
                 if(v.length > 0){
                     switch (v[0]){
                         case '1':
@@ -276,7 +286,6 @@ define(function(require, exports, module) {
                     }
                 }
             });
-
         },
 
         //返回触发器结果
@@ -284,30 +293,33 @@ define(function(require, exports, module) {
             var ex = this;
             var resultOr = false;
             var resultAdd = true;
-            $.each(ex.triggerRegisterAnd,function (k,v) {
-                resultAdd = resultAdd && v(ex.userData);
+            $.each(ex.triggerFactory,function (k,v) {
+                $.each(v.triggerRegisterAnd,function (k,v) {
+                    resultAdd = resultAdd && v(ex.userData);
+                });
+                $.each(v.triggerRegisterOr,function (kk,vv) {
+                    resultOr = resultOr || vv(ex.userData);
+                });
+                if(v.triggerRegisterAnd.length > 0 && v.triggerRegisterOr.length > 0){
+                    if(resultOr && resultAdd){
+                        //触发器执行
+                        ex.runOptions(v.triggerActions);
+                    }
+                }
+                else if(v.triggerRegisterAnd.length > 0){
+                    if(resultAdd){
+                        //触发器执行
+                        ex.runOptions(v.triggerActions);
+                    }
+                }
+                else if(v.triggerRegisterOr.length > 0){
+                    if(resultOr){
+                        //触发器执行
+                        ex.runOptions(v.triggerActions);
+                    }
+                }
             });
-            $.each(ex.triggerRegisterOr,function (kk,vv) {
-                resultOr = resultOr || vv(ex.userData);
-            });
-            if(ex.triggerRegisterAnd.length > 0 && ex.triggerRegisterOr.length > 0){
-                if(resultOr && resultAdd){
-                    //触发器执行
-                    ex.runOptions();
-                }
-            }
-            else if(ex.triggerRegisterAnd.length > 0){
-                if(resultAdd){
-                    //触发器执行
-                    ex.runOptions();
-                }
-            }
-            else if(ex.triggerRegisterOr.length > 0){
-                if(resultOr){
-                    //触发器执行
-                    ex.runOptions();
-                }
-            }
+
 
         },
 
