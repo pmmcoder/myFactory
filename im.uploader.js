@@ -28,7 +28,7 @@ define(function(require, exports, module) {
         old_file_name: '',//初始文件名
         aId: 0,//代理商ID
         container:'',
-        serverUrl: '/osp2016/chat/getOssSign.php',//签名请求url
+        serverUrl: 'xxxxxxxxxxxxxxxxxx',//签名请求url
         //请求签名
         send_request: function () {
             var xmlhttp = null;
