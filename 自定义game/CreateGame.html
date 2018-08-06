@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Hello Game!</title>
+	<meta charset="utf-8">
+	<script type="text/javascript" src="http://apps.bdimg.com/libs/jquery/1.10.2/jquery.min.js"></script>
+	<style type="text/css">
+		#background-div {
+			/*background-image: url("./img/starpusher_screenshot2.jpg");*/
+			background-color: #848383;
+			background-size: cover;
+			width: 80%;
+		    height: 600px;
+		    /*margin: auto;*/
+		    position: absolute;
+		    left: 155px;
+		}
+
+		#boll {
+			width: 40px;
+		    height: 40px;
+		    border-radius: 50px;
+		    background-color: red;
+		}
+
+		h1 {
+			color: #fff;
+    		text-align: center;
+		}
+
+		body {
+			background-color: #151313;
+		}
+	</style>
+</head>
+<body>
+<h1>This is a Game!</h1>
+<div id="background-div">
+	<div id="boll"></div>
+</div>
+
+<script type="text/javascript">
+	$('.pmm').click(function(){
+		alert('hello');
+	})
+	var x=30;        //起始位置x
+	var y=30;        //起始位置y
+	var movex=0;     //现在的位置x
+	var movey=0;     //现在的位置y
+	var persong_speed=5;     //人物移动的速度
+	var ball_speed= 1;       //子弹的速度
+	var direction= 'd';     //人物的方向
+	var childdiv_objarr =[];           //子弹对象
+	var ball_num =20;          //子弹的数量
+	var ball_shot_num =0;     //已经射出的数量
+	var set_move_ball = '';
+	$(document).on('keydown',function(event) {
+		// alert(event.which);
+		switch(event.which){
+			case 87:     //w
+				y =y-ball_speed;
+				direction ='w';
+				break;
+			case 65:     //a
+				x =x-ball_speed;
+				direction ='a';
+				break;
+			case 83:     //s
+				y =y+ball_speed;
+				direction ='s';
+				break;
+			case 68:    //d
+				x =x+ball_speed;
+				direction ='d';
+				break;
+			case 75:     //k
+				ball_creat();
+				ball_shot_num++;
+				break;
+		}
+		$('#boll').css('margin-left',x);
+		$('#boll').css('margin-top',y);
+
+	})
+	//子弹类
+	function Bullet(x,y,direct){  
+	    this.x=x;  
+	    this.y=y;  
+	    this.direct=direct;//方向  
+	    this.timer;//每个子弹分配一个计时器  
+	}
+
+	//产生子弹的形状
+	Bullet.prototype.draw=function(){  
+        //画出所有子弹  
+        for(var i=0;i<childdiv_objarr.length;i++){  
+            var b=childdiv_objarr[i];  
+            //save restore意味着里面所有操作对外变没影响  
+            ctx.save();  
+            ctx.beginPath();//开始路径  
+            ctx.fillStyle='red';//颜色  
+            ctx.fillRect(b.x,b.y,8,8);//用矩形表示子弹  
+            ctx.closePath();//闭合路径  
+            ctx.restore();  
+        }  
+	}
+	function ball_creat() {
+		movey =$('#boll').offset().top;
+		movex =$('#boll').offset().left;
+		// alert(movex);
+		// childdiv=$('<span style="width: 10px;height: 10px;background-color: #101010;display: block;border-radius: 50px;position: absolute;"></span>'); 
+		// childdiv.attr('id','child'+ball_shot_num);
+		// childdiv.css('left',movex);
+		// childdiv.css('top',movey);
+		childdiv =new Bullet(movex,movey,direction);
+		// movex =movex+ball_speed;
+		// movey =movey+ball_speed;
+		// setTimeout(ball_move(),1000);
+
+		// childdiv.appendto('#background-div');
+		// setTimeout('',1000);
+		childdiv_objarr.push(childdiv);
+		console.log(childdiv_objarr);
+		// $('#boll').after(childdiv);
+		// while(true){
+		stop_ball_move();
+		// var direction_ball =direction;
+		childdiv_objarr[childdiv_objarr.length-1].timer =setInterval('childdiv_objarr['+(childdiv_objarr.length-1)+'].ball_move()',1);
+			// ball_move();
+		// }
+		
+	}
+	Bullet.prototype.ball_move =function (){
+		// console.log(movex);
+		// switch(arg_ball){
+		// 	case 'w':
+		// 		movey =movey-ball_speed;
+		// 		break;
+		// 	case 'a':
+		// 		movex =movex-ball_speed;
+		// 		break;
+		// 	case 's':
+		// 		movey =movey+ball_speed;
+		// 		break;
+		// 	case 'd':
+		// 		movex =movex+ball_speed;
+		// 		break;
+
+		// }
+		// var ball_shot_num_temp =ball_shot_num-1;
+		// console.log(ball_shot_num_temp);
+		// $('#'+'child'+ball_shot_num_temp).css('left',movex);
+		// $('#'+'child'+ball_shot_num_temp).css('top',movey);
+		// Bullet.prototype.run=function(){  
+        switch(this.direct){  
+        case 0:  
+                this.y-=2;  
+                break;  
+        case 1:  
+                this.y+=2;  
+                break;  
+        case 2:  
+                this.x-=2;  
+                break;  
+        case 3:  
+                this.x+=2;  
+                break;  
+	    }   
+	} 
+	//停止子弹的运动
+	function stop_ball_move(){
+		clearInterval(set_move_ball);
+		// alert(ball_shot_num);
+		var ball_shot_num_temp =ball_shot_num-1;
+		$('#'+'child'+ball_shot_num_temp).remove();
+	}
+	//测试浏览器否支持web_worker
+	// $(function(){
+	// 	if(typeof(Worker)!=="undefined")
+	// 	  {
+	// 	  alert('ok');
+	// 	  }
+	// 	else
+	// 	  {
+	// 	  alert('no');
+	// 	  }
+	// })
+</script>
+</body>
+</html>
